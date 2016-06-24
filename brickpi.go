@@ -107,11 +107,32 @@ const (
 )
 
 type BrickPi struct {
-	Serial *serial.Port
+	Serial     *serial.Port
+	Address    [2]uint8
+	MotorSpeed [4]uint8
+
+	MotorEnable [4]uint8
+
+	EncoderOffset [4]uint8
+	Encoder       [4]uint8
+
+	Sensor         [4]uint8
+	SensorArray    [4][4]uint8
+	SensorType     [4]uint8
+	SensorSettings [4][8]uint8
+
+	SensorI2CDevices [4]uint8
+	SensorI2CSpeed   [4]uint8
+	SensorI2CAddr    [4][8]uint8
+	SensorI2CWrite   [4][8]uint8
+	SensorI2CRead    [4][8]uint8
+	SensorI2COut     [4][8][16]uint8
+	SensorI2CIn      [4][8][16]uint8
+	Timeout          int
 }
 
 func New() *BrickPi {
-	return &BrickPi{}
+	return &BrickPi{Address: [2]uint8{1, 2}}
 }
 
 func (bp *BrickPi) Setup() error {
@@ -124,6 +145,10 @@ func (bp *BrickPi) Setup() error {
 	}
 	time.Sleep(time.Second * 1)
 	bp.Serial = ser
+	return nil
+}
+
+func (bp *BrickPi) SetupSensors() error {
 	return nil
 }
 
