@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/waltzofpearls/serial"
@@ -217,9 +218,34 @@ func (bp *BrickPi) SetupSensors() int {
 }
 
 func (bp *BrickPi) AddBits(byteOffset, bitOffset, bits, value int) {
+	for i := 0; i < bits; i++ {
+		if value&0x01 != 0 {
+			Array[(byteOffset + ((bitOffset + BitOffset + i) / 8))] |= (0x01 << uint((bitOffset+BitOffset+i)%8))
+		}
+		value = value / 2
+	}
+	BitOffset += bits
 }
 
 func (bp *BrickPi) BrickPiTx(dest, ByteCount int, OutArray [256]int) {
+	txBuffer := "" +
+		strconv.Itoa(dest) +
+		strconv.Itoa((dest+ByteCount+bp.sum(OutArray[:ByteCount]))%256) +
+		strconv.Itoa(ByteCount)
+
+	for _, i := range OutArray[:ByteCount] {
+		txBuffer += strconv.Itoa(i)
+	}
+
+	bp.Serial.Write([]byte(txBuffer))
+}
+
+func (bp *BrickPi) sum(array []int) int {
+	sum := 0
+	for _, value := range array {
+		sum += value
+	}
+	return sum
 }
 
 func (bp *BrickPi) BrickPiRx(timeout int) (int, int, [256]int) {
